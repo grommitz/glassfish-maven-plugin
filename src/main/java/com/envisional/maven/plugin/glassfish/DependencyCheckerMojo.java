@@ -44,7 +44,6 @@ public class DependencyCheckerMojo extends AbstractMojo {
 	private MavenProject project;
 	
 	public void execute() throws MojoExecutionException, MojoFailureException {
-		getLog().info("Checking domain1/lib folder...");
 		@SuppressWarnings("unchecked")
 		List<Dependency> dependencies = project.getDependencies();
 		if (!System.getenv().containsKey("GLASSFISH_HOME")) {
@@ -64,8 +63,8 @@ public class DependencyCheckerMojo extends AbstractMojo {
 
 		String base = System.getenv().get("GLASSFISH_HOME")+"/glassfish";
 		final List<String> locations = Lists.newArrayList(
-				base+"/modules/",
 				base+"/lib/",
+				base+"/modules/",
 				base+"/domains/domain1/lib/");
 
 		String fileName = dep.getArtifactId() + "-" + dep.getVersion() + ".jar";
@@ -79,10 +78,9 @@ public class DependencyCheckerMojo extends AbstractMojo {
 		}
 
 		fileName = dep.getArtifactId() + ".jar";
-
-		for (String location : locations) {
-			File jar = new File(location + fileName);
-			if (jar.exists()) {
+		File jar = new File(base + "/modules/" + fileName);
+		if (jar.exists()) {
+			if (correctVersionInsideJar(jar, dep.getVersion())) {
 				getLog().info("Found "+jar.toString());
 				return true;
 			}
@@ -93,6 +91,14 @@ public class DependencyCheckerMojo extends AbstractMojo {
 
 	public void setProject(MavenProject project) {
 		this.project = project;
+	}
+
+	// TODO!
+	private boolean correctVersionInsideJar(File jar, String version) {
+		// unzip -l $jar | awk -F' ' '{print $4}' | grep pom.properties > loc
+		// unzip -p $jar `cat loc` | grep version | awk -F'=' '{print $2}' > ver
+		// if [ `cat ver` = $version ]; then ...
+		return true;
 	}
 	
 
