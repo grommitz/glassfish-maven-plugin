@@ -60,18 +60,34 @@ public class DependencyCheckerMojo extends AbstractMojo {
 	}
 
 	private boolean installed(Dependency dep) {
+		getLog().info("Looking for " + dep.toString() + "...");
+
+		String base = System.getenv().get("GLASSFISH_HOME")+"/glassfish";
 		final List<String> locations = Lists.newArrayList(
-					System.getenv().get("GLASSFISH_HOME")+"/glassfish/lib/",
-					System.getenv().get("GLASSFISH_HOME")+"/glassfish/domains/domain1/lib/");
+				base+"/modules/",
+				base+"/lib/",
+				base+"/domains/domain1/lib/");
+
 		String fileName = dep.getArtifactId() + "-" + dep.getVersion() + ".jar";
 
 		for (String location : locations) {
 			File jar = new File(location + fileName);
-			getLog().info("Looking for " + dep.toString() + " at " + jar.toString());
 			if (jar.exists()) {
+				getLog().info("Found "+jar.toString());
 				return true;
 			}
 		}
+
+		fileName = dep.getArtifactId() + ".jar";
+
+		for (String location : locations) {
+			File jar = new File(location + fileName);
+			if (jar.exists()) {
+				getLog().info("Found "+jar.toString());
+				return true;
+			}
+		}
+
 		return false;
 	}
 
